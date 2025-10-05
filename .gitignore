@@ -1,0 +1,10 @@
+# Ignore PNG images
+*.png
+
+# Ignore compiled binary
+a.out
+
+# Ignore flex and bison generated files
+lex.yy.c
+y.tab.c
+y.tab.h
