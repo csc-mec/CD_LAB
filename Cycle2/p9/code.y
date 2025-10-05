@@ -1,162 +1,221 @@
 %{
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
-int fval=0;
+
+// --- Data Structures ---
+struct quad {
+    char op[5];
+    char arg1[10];
+    char arg2[10];
+    char result[10];
+} QUAD[30];
+
+struct stack {
+    int items[100];
+    int top;
+} stk;
+
+// --- Global Variables ---
+int Index = 0;
+int tIndex = 0;
+int StNo, Ind, tInd;
+extern int LineNo;
+
+// --- Function Prototypes ---
+void push(int data);
+int pop();
+void AddQuadruple(const char *op, const char *arg1, const char *arg2, char *result);
+void yyerror(const char *s);
 int yylex(void);
-int yyerror(char *s);
-
-struct node 
-{
-    struct node * left;
-    struct node * right;
-    char value;
-    
-}*head;
-
-int strength(struct node *NODE)
-{
-    if(NODE==NULL)
-    {
-        return 0;
-    }
-    return 1+strength(NODE->left)+strength(NODE->right);
-}
-
-
-struct qnode
-{
-    int nvalue;
-    int start;
-    int end;
-    struct node * tnode;
-}q[100];
-
-int front=0;
 
 %}
 
+// --- Yacc Declarations ---
 %union {
-     struct node *tnode;
-     char cval;    
+    char var[10];
 }
 
+%token <var> NUM VAR RELOP
+%token MAIN IF ELSE WHILE TYPE
+%type <var> EXPR ASSIGNMENT CONDITION IFST ELSEST WHILELOOP
 
-%token <tnode> LETTER
-%token <tnode> PLUS MINUS MULTIPLICATION DIVISION LBRACKET RBRACKET EQ
-%type  <tnode> A B C E
+%left '-' '+'
+%left '*' '/'
+
 %%
-E: LETTER EQ A {$$=malloc(sizeof(struct node));$$->left=$1;$$->right=$3;$$->value='=';head=$$;}
- | A {$$=$1;head=$$;}
- ;
-A: A PLUS B {$$=malloc(sizeof(struct node));$$->left=$1;$$->right=$3;$$->value='+';}
- | B        {$$=$1;}
- | A MINUS B {$$=malloc(sizeof(struct node));$$->left=$1;$$->right=$3;$$->value='-';}
- ;
+/* --- Grammar Rules --- */
 
-B: B MULTIPLICATION C {$$=malloc(sizeof(struct node));$$->left=$1;$$->right=$3;$$->value='*';}
- | B DIVISION C {$$=malloc(sizeof(struct node));$$->left=$1;$$->right=$3;$$->value='/';}
- | C {$$=$1;}
- ;
+PROGRAM: MAIN BLOCK
+    ;
 
-C: LETTER {$$=$1;}
- | LBRACKET A RBRACKET {$$=$2;}
- ;
+BLOCK: '{' CODE '}'
+    ;
+
+CODE: BLOCK
+    | STATEMENT CODE
+    | STATEMENT
+    ;
+
+STATEMENT: DESCT ';'
+    | ASSIGNMENT ';'
+    | CONDST
+    | WHILEST
+    ;
+
+DESCT: TYPE VARLIST
+    ;
+
+VARLIST: VAR ',' VARLIST
+    | VAR
+    ;
+
+ASSIGNMENT: VAR '=' EXPR {
+    strcpy(QUAD[Index].op, "=");
+    strcpy(QUAD[Index].arg1, $3);
+    strcpy(QUAD[Index].arg2, "");
+    strcpy(QUAD[Index].result, $1);
+    strcpy($$, QUAD[Index].result);
+    Index++;
+}
+;
+
+EXPR: EXPR '+' EXPR      { AddQuadruple("+", $1, $3, $$); }
+    | EXPR '-' EXPR      { AddQuadruple("-", $1, $3, $$); }
+    | EXPR '*' EXPR      { AddQuadruple("*", $1, $3, $$); }
+    | EXPR '/' EXPR      { AddQuadruple("/", $1, $3, $$); }
+    | '-' EXPR           { AddQuadruple("UMIN", $2, "", $$); }
+    | '(' EXPR ')'       { strcpy($$, $2); }
+    | VAR
+    | NUM
+    ;
+
+CONDST: IFST {
+    Ind = pop();
+    sprintf(QUAD[Ind].result, "%d", Index);
+    Ind = pop();
+    sprintf(QUAD[Ind].result, "%d", Index);
+}
+    | IFST ELSEST
+    ;
+
+IFST: IF '(' CONDITION ')' {
+    strcpy(QUAD[Index].op, "==");
+    strcpy(QUAD[Index].arg1, $3);
+    strcpy(QUAD[Index].arg2, "FALSE");
+    strcpy(QUAD[Index].result, "-1");
+    push(Index);
+    Index++;
+} BLOCK {
+    strcpy(QUAD[Index].op, "GOTO");
+    strcpy(QUAD[Index].arg1, "");
+    strcpy(QUAD[Index].arg2, "");
+    strcpy(QUAD[Index].result, "-1");
+    push(Index);
+    Index++;
+};
+
+ELSEST: ELSE {
+    tInd = pop();
+    Ind = pop();
+    push(tInd);
+    sprintf(QUAD[Ind].result, "%d", Index);
+} BLOCK {
+    Ind = pop();
+    sprintf(QUAD[Ind].result, "%d", Index);
+};
+
+CONDITION: VAR RELOP VAR {
+    AddQuadruple($2, $1, $3, $$);
+    StNo = Index - 1;
+}
+    | VAR
+    | NUM
+    ;
+
+WHILEST: WHILELOOP {
+    Ind = pop();
+    sprintf(QUAD[Ind].result, "%d", StNo);
+    Ind = pop();
+    sprintf(QUAD[Ind].result, "%d", Index);
+}
+;
+
+WHILELOOP: WHILE '(' CONDITION ')' {
+    strcpy(QUAD[Index].op, "==");
+    strcpy(QUAD[Index].arg1, $3);
+    strcpy(QUAD[Index].arg2, "FALSE");
+    strcpy(QUAD[Index].result, "-1");
+    push(Index);
+    Index++;
+} BLOCK {
+    strcpy(QUAD[Index].op, "GOTO");
+    strcpy(QUAD[Index].arg1, "");
+    strcpy(QUAD[Index].arg2, "");
+    strcpy(QUAD[Index].result, "-1");
+    push(Index);
+    Index++;
+}
+;
+
 %%
+/* --- C Code Section --- */
+extern FILE *yyin;
 
+int main(int argc, char *argv[]) {
+    FILE *fp;
+    int i;
+    stk.top = -1; // Initialize stack
 
-int main() {
-    printf("Enter expression: ");
-    if (yyparse() == 0) 
-    {
-	printf("\n\nAbstract parse tree****:\n\n");
-	int n=60;
-    int screen=0;
-    int level=0;
-    q[0].nvalue=2;
-    q[0].start=n;
-    q[0].tnode=head;
-    
-    q[1].nvalue=0;
-    
-	int k=0;
-int rear=1;
-    
-    while(front<rear)
-    {
-        if(q[front].nvalue==0)
-        {
-            printf("\n");
-            screen=0;
-            rear++;
-	    q[rear].nvalue=0;
-	    front++;
-            if(front<rear && level%2==0)
-            {
-            n/=2;
-            }
-            level++;
+    if (argc > 1) {
+        fp = fopen(argv[1], "r");
+        if (!fp) {
+            printf("\nFile not found: %s\n", argv[1]);
+            exit(0);
         }
-        else if(q[front].nvalue==1)
-        {   
-            for(screen;screen<q[front].start;screen++)
-		{printf(" ");
-		}
-            for(screen;screen<=q[front].end;screen++)
-		{printf("-");
-		}
-            if(q[front].tnode->left)
-            {
-                rear++;
-                q[rear].nvalue=2;
-                q[rear].tnode=q[front].tnode->left;
-                q[rear].start=q[front].start;
-            }
-            if(q[front].tnode->right)
-            {
-                rear++;
-                q[rear].nvalue=2;
-                q[rear].tnode=q[front].tnode->right;
-                q[rear].start=q[front].end;
-                
-            }
-            front++;
-        }
-        else
-        {
-		
-            for(screen;screen<q[front].start;screen++)
-		{printf(" ");
-		}
-            printf("%c",q[front].tnode->value);
-	    screen++;
-            if(q[front].tnode->left||q[front].tnode->right)
-            {
-                rear++;
-                q[rear].tnode=q[front].tnode;
-                q[rear].nvalue=1;
-                q[rear].start=(q[front].tnode->left)?q[front].start-4*(strength(q[front].tnode->left->right)+1):q[front].start;
-                q[rear].end=(q[front].tnode->right)?q[front].start+4*(strength(q[front].tnode->right->left)+1):q[front].start;
-                
-            }
-	    front++;
-        }
-	k++;
-	//if(k==2)return 0;
-        
+        yyin = fp;
+    }
+
+    yyparse();
+
+    // Correctly print the quadruple table header
+    printf("\n\n\t\t----------------------------------------\n");
+    printf("\t\tPos\tOperator\tArg1\tArg2\tResult\n");
+    printf("\t\t----------------------------------------\n");
+
+    for (i = 0; i < Index; i++) {
+        printf("\t\t%d\t%s\t\t%s\t%s\t%s\n", i, QUAD[i].op, QUAD[i].arg1, QUAD[i].arg2, QUAD[i].result);
     }
     
-
-        
-    }
-    printf("\n\n");
+    printf("\t\t----------------------------------------\n\n");
     return 0;
 }
 
-int yywrap(void) {
-    return 1;
+void push(int data) {
+    if (stk.top >= 99) { // Check before incrementing
+        printf("\nStack overflow\n");
+        exit(0);
+    }
+    stk.items[++stk.top] = data;
 }
 
-int yyerror(char *s) {
-    printf("Error: %s\n", s);
-    return 0;
+int pop() {
+    if (stk.top == -1) {
+        printf("\nStack underflow\n");
+        exit(0);
+    }
+    return stk.items[stk.top--];
+}
+
+void AddQuadruple(const char *op, const char *arg1, const char *arg2, char *result) {
+    strcpy(QUAD[Index].op, op);
+    strcpy(QUAD[Index].arg1, arg1);
+    strcpy(QUAD[Index].arg2, arg2);
+    sprintf(QUAD[Index].result, "t%d", tIndex++);
+    strcpy(result, QUAD[Index].result);
+    Index++;
+}
+
+void yyerror(const char *s) {
+    printf("\nError on line %d: %s\n", LineNo, s);
 }

@@ -1,26 +1,29 @@
 %{
+// --- C Declarations Section ---
 #include "y.tab.h"
-#include <stdlib.h>
 #include <stdio.h>
-struct node 
-{
-    struct node * left;
-    struct node * right;
-    char value;
-    
-};
+#include <string.h>
+
+int LineNo = 1;
 %}
 
-%%
-[a-zA-Z] {yylval.tnode=malloc(sizeof(struct node));yylval.tnode->left=NULL;yylval.tnode->right=NULL;yylval.tnode->value=yytext[0];return LETTER;}
-[+] {yylval.tnode=malloc(sizeof(struct node));yylval.tnode->left=NULL;yylval.tnode->right=NULL;yylval.tnode->value=yytext[0];return PLUS;}
-[/] {yylval.tnode=malloc(sizeof(struct node));yylval.tnode->left=NULL;yylval.tnode->right=NULL;yylval.tnode->value=yytext[0];return DIVISION;}
-[*] {yylval.tnode=malloc(sizeof(struct node));yylval.tnode->left=NULL;yylval.tnode->right=NULL;yylval.tnode->value=yytext[0];return MULTIPLICATION;}
-[-] {yylval.tnode=malloc(sizeof(struct node));yylval.tnode->left=NULL;yylval.tnode->right=NULL;yylval.tnode->value=yytext[0];return MINUS;}
-[(] {yylval.tnode=malloc(sizeof(struct node));yylval.tnode->left=NULL;yylval.tnode->right=NULL;yylval.tnode->value=yytext[0];return LBRACKET;}
-[)] {yylval.tnode=malloc(sizeof(struct node));yylval.tnode->left=NULL;yylval.tnode->right=NULL;yylval.tnode->value=yytext[0];return RBRACKET;}
-[=] {yylval.tnode=malloc(sizeof(struct node));yylval.tnode->left=NULL;yylval.tnode->right=NULL;yylval.tnode->value=yytext[0];return EQ;}
-[\n] {return 0;}
-[ \t]   {};
+identifier [a-zA-Z][_a-zA-Z0-9]*
+number     [0-9]+|([0-9]*\.[0-9]+)
 
 %%
+"main"                 return MAIN;
+"if"                   return IF;
+"else"                 return ELSE;
+"while"                return WHILE;
+"int"|"char"|"float"   return TYPE;
+{identifier}           { strcpy(yylval.var, yytext); return VAR;   }
+{number}               { strcpy(yylval.var, yytext); return NUM;   }
+"<"|">"|">="|"<="|"==" { strcpy(yylval.var, yytext); return RELOP; }
+[ \t\r]                ; /* THE FIX IS HERE: Ignore whitespace AND carriage returns */
+\n                     LineNo++;
+.                      return yytext[0];
+%%
+
+int yywrap() {
+    return 1;
+}
