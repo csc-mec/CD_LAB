@@ -1,0 +1,124 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX 10
+#define CHARSET 10
+
+int n, symbols;
+int e_trans[MAX][MAX]; 
+int trans[MAX][CHARSET][MAX]; 
+int new_trans[MAX][CHARSET][MAX];
+
+int visited[MAX];
+int epsilon_closure[MAX][MAX]; 
+
+void dfs(int state, int closure[], int visited[]) {
+    visited[state] = 1;
+    closure[state] = 1;
+    for(int i = 0; i < n; i++) {
+        if(e_trans[state][i] && !visited[i]) {
+            dfs(i, closure, visited);
+        }
+    }
+}
+
+void compute_epsilon_closures() {
+    for(int i = 0; i < n; i++) {
+        for(int j = 0; j < n; j++) {
+            visited[j] = 0;
+            epsilon_closure[i][j] = 0;
+        }
+        dfs(i, epsilon_closure[i], visited);
+    }
+}
+
+void convert() {
+    for(int s = 0; s < n; s++) {
+        for(int a = 0; a < symbols; a++) {
+           
+            for(int i = 0; i < n; i++)
+                new_trans[s][a][i] = 0;
+
+           
+            for(int i = 0; i < n; i++) {
+                if(epsilon_closure[s][i]) {
+             
+                    for(int j = 0; j < n; j++) {
+                        if(trans[i][a][j]) {
+                            
+                            for(int k = 0; k < n; k++) {
+                                if(epsilon_closure[j][k])
+                                    new_trans[s][a][k] = 1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+int main() {
+    printf("Enter number of states: ");
+    scanf("%d", &n);
+    printf("Enter number of input symbols: ");
+    scanf("%d", &symbols);
+
+    for(int i = 0; i < n; i++)
+        for(int a = 0; a < symbols; a++)
+            for(int j = 0; j < n; j++)
+                trans[i][a][j] = 0;
+
+    int t;
+    printf("Enter number of normal transitions: ");
+    scanf("%d", &t);
+    printf("Enter transitions as (from state - input symbot - to state):\n");
+    for(int i = 0; i < t; i++) {
+        int from, sym, to;
+        scanf("%d %d %d", &from, &sym, &to);
+        trans[from][sym][to] = 1;
+    }
+
+    printf("Enter number of epsilon transitions: ");
+    scanf("%d", &t);
+    printf("Enter each epsilon transition as (from state - to state):\n");
+
+    for(int i = 0; i < n; i++)
+        for(int j = 0; j < n; j++)
+            e_trans[i][j] = 0;
+    for(int i = 0; i < t; i++) {
+        int from, to;
+        scanf("%d %d", &from, &to);
+        e_trans[from][to] = 1;
+    }
+
+    compute_epsilon_closures();
+
+    convert();
+
+    printf("\nEpsilon closures:\n");
+    for(int i = 0; i < n; i++) {
+        printf("State %d: { ", i);
+        for(int j = 0; j < n; j++) {
+            if(epsilon_closure[i][j])
+                printf("%d ", j);
+        }
+        printf("}\n");
+    }
+
+
+    printf("\nNew transition table (after e-nfa to nfa transition):\n");
+    for(int s = 0; s < n; s++) {
+        for(int a = 0; a < symbols; a++) {
+            printf("From state %d on input %d: { ", s, a);
+            for(int j = 0; j < n; j++) {
+                if(new_trans[s][a][j])
+                    printf("%d ", j);
+            }
+            printf("}\n");
+        }
+    }
+
+    return 0;
+}
+
