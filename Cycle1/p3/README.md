@@ -1,8 +1,27 @@
-# Cycle 1 — p3
+# Cycle 1 — p3: NFA to DFA Converter
 
 Files:
-- `p3.c`
+- `p3.c` - Implementation of NFA to DFA conversion algorithm
 
 Brief description:
 
-`p3.c` is a C program for a Cycle 1 lab problem. The source implements a small exercise from the course; typical tasks in this cycle include string processing, simple automata, or parsing demonstrations. If you want a detailed summary, I can scan `p3.c` and extract the main algorithm and usage.
+This program implements the subset construction algorithm to convert an NFA (Non-deterministic Finite Automaton) to its equivalent DFA (Deterministic Finite Automaton). Features:
+
+1. Takes input describing the NFA:
+   - Alphabet set
+   - Number of states
+   - Start state
+   - Final states
+   - Transition function
+
+2. Performs conversion by:
+   - Computing new DFA states (power set of NFA states)
+   - Building transition table for the DFA
+   - Determining final states in the DFA
+
+3. Outputs the equivalent DFA with:
+   - All DFA states (as sets of NFA states)
+   - Complete transition table
+   - Start state and final states
+
+The program uses dynamic data structures (linked lists) to handle the potentially large number of DFA states efficiently.

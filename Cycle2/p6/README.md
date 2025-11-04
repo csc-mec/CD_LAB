@@ -1,8 +1,29 @@
-# Cycle 2 — p6
+# Cycle 2 — p6: Name Substring Scanner
 
 Files:
-- `p6.l`
+- `p6.l` - Flex lexical analyzer for substring matching
 
 Brief description:
 
-This folder contains a lexical specification file (`p6.l`) for use with `flex` (or `lex`). It implements a lexical analyzer for the assigned lab problem — tokenizing input according to the rules defined in the `.l` file. To produce a scanner, run `flex p6.l` and compile the generated C code.
+A Flex-based program that implements a substring matching scanner. The program:
+
+1. Asks for a name input
+2. Takes the first 4 characters of that name
+3. Scans subsequent input strings to check if they contain those 4 characters as a substring
+4. Reports whether each input word contains or doesn't contain the substring
+
+Usage:
+```bash
+flex p6.l
+gcc lex.yy.c -o p6
+./p6
+```
+
+Example:
+```
+Enter Your Name: John
+Enter the string: Johnson
+Johnson contains 'John' as substring
+```
+
+The program demonstrates basic pattern matching and string handling using Flex.

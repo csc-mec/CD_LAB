@@ -1,8 +1,28 @@
-# Cycle 3 — p11
+# Cycle 3 — p11: Operator Precedence Parser
 
 Files:
-- `p11.c`
+- `p11.c` - Implementation of operator precedence parsing
 
 Brief description:
 
-`p11.c` is a Cycle 3 C program. Cycle 3 often includes parser implementation techniques; however, this file may cover any assigned exercise from that cycle. I can extract functions, usage, and a short summary from the source if you want a deeper description.
+This program implements an Operator Precedence Parser, which is used for parsing expressions based on operator precedence relationships. Features:
+
+1. Setup:
+   - Takes input for terminals (operators/operands)
+   - Builds operator precedence table with <, =, > relationships
+   - Displays the complete precedence table
+
+2. Parsing:
+   - Uses a stack-based shift-reduce parsing approach
+   - Processes input string symbol by symbol
+   - Makes decisions based on precedence relationships
+   - Performs shift and reduce actions
+
+3. Output:
+   - Shows step-by-step parsing process
+   - Displays stack contents at each step
+   - Shows remaining input string
+   - Indicates parsing action (shift/reduce)
+   - Reports whether string is accepted or rejected
+
+Usage: Run the program, provide the terminals and precedence relationships, then enter an expression to parse.

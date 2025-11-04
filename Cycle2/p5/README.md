@@ -1,8 +1,23 @@
-# Cycle 2 — p5
+# Cycle 2 — p5: Simple Lexical Analyzer in C
 
 Files:
-- `p5.c`
+- `p5.c` - Hand-written lexical analyzer implementation
 
 Brief description:
 
-`p5.c` is a C source file for a Cycle 2 lab exercise. Cycle 2 typically introduces lex/yacc and parsing tasks; this program may implement a specific parsing/analysis task or another compiler-lab exercise in C. I can extract more details from the source on request.
+This program implements a basic lexical analyzer (scanner/tokenizer) in pure C, without using Lex/Flex. Features:
+
+1. Token Recognition:
+   - Keywords (int, float, if, else, etc.)
+   - Identifiers (variables, function names)
+   - Numbers (integer literals)
+   - Delimiters ({, }, (, ), [, ], ;, ,)
+   - Basic operators (+, -, *, /, =, <, >)
+
+2. Implementation details:
+   - Uses character-by-character scanning
+   - Maintains a keyword table
+   - Handles whitespace and newlines
+   - Provides token classification
+
+Usage: Run the program and enter C-like code. The analyzer will output the tokens it recognizes with their types (KEYWORD, IDENTIFIER, NUMBER, etc.).

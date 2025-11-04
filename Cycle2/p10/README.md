@@ -1,9 +1,42 @@
-# Cycle 2 — p10
+# Cycle 2 — p10: FOR Loop Syntax Validator
 
 Files:
-- `code.l`
-- `code.y`
+- `code.l` - Lexical analyzer for FOR loop constructs
+- `code.y` - Parser for validating FOR loop syntax
 
 Brief description:
 
-`p10` contains a Lex (`code.l`) and Yacc (`code.y`) implementation for a lab exercise. Together they define a lexer and parser for the specified grammar in the lab. Use `flex` and `bison` to generate and compile the sources into an executable.
+A Lex/Yacc implementation that validates the syntax of C-style FOR loops:
+
+1. Lexical Analysis (`code.l`):
+   - Recognizes:
+     * 'for' keyword
+     * Parentheses and braces
+     * Operators (++, --, =, <, >, +, -, *, /)
+     * Identifiers and numbers
+     * Semicolons
+
+2. Parser (`code.y`):
+   - Validates:
+     * FOR loop structure
+     * Loop initialization
+     * Loop condition
+     * Loop increment/decrement
+     * Nested FOR loops
+     * Expression syntax
+   - Allows empty loop bodies
+   - Handles compound statements
+
+Build:
+```bash
+flex code.l
+bison -y -d code.y
+gcc lex.yy.c y.tab.c -o for_validator
+```
+
+Example valid input:
+```c
+for(i=0; i<10; i++) { x=x+1; }
+```
+
+The program validates if the FOR loop syntax is correct according to C language rules.

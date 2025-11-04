@@ -1,10 +1,38 @@
-# Cycle 2 — p9
+# Cycle 2 — p9: Intermediate Code Generator
 
 Files:
-- `code.l`
-- `code.y`
-- `test.c`
+- `code.l` - Lexical analyzer for C-like language
+- `code.y` - Parser and intermediate code generator
+- `test.c` - Test input/driver program
 
 Brief description:
 
-This folder contains a Lex/Yacc pair (`code.l`, `code.y`) plus `test.c`, which likely serves as a small C test harness for the generated parser. Typical workflow: generate lexer and parser using `flex` and `bison`, compile the generated sources together with `test.c`, and run tests.
+A Lex/Yacc implementation that generates intermediate code (quadruples) for a C-like language:
+
+1. Lexical Analysis (`code.l`):
+   - Recognizes:
+     * Keywords (main, if, else, while)
+     * Types (int, char, float)
+     * Identifiers and numbers
+     * Relational operators
+     * Line numbers for error reporting
+
+2. Parser (`code.y`):
+   - Handles:
+     * Variable declarations
+     * Assignments
+     * Arithmetic expressions
+     * If-else statements
+     * While loops
+   - Generates quadruples (4-address code)
+   - Manages temporary variables
+   - Implements control flow
+
+Build:
+```bash
+flex code.l
+bison -y -d code.y
+gcc lex.yy.c y.tab.c -o compiler
+```
+
+The output is a table of quadruples showing the intermediate representation of the program.
